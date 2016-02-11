@@ -7,7 +7,8 @@ gulp3.9からbebelを標準サポートしたことによりファイル名をgu
 
     npm install --save-dev babel-core
 
-ただしimportは対応されていないので別途babel-preset-es2015と.babelrcが必要
+gulpfile.babel.js内でbabelをrequireする必要はない<br>
+ただしimportには対応していないので別途babel-preset-es2015と.babelrcが必要
 
     npm install --save-dev babel-preset-es2015
 
