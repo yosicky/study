@@ -5,9 +5,22 @@ var _test = require('./modules/test');
 
 var _test2 = _interopRequireDefault(_test);
 
-function _interopRequireDefault(obj) {
-                               return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+console.log('exampleeee'); /**
+                            * example
+                            */
+
+var t = new _test2.default('ggggggggg');
+
+},{"./modules/test":3}],2:[function(require,module,exports){
+'use strict';
+
+var _test = require('./modules/test');
+
+var _test2 = _interopRequireDefault(_test);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 console.log('studyaaaaaabc'); /**
                                * study
@@ -15,7 +28,7 @@ console.log('studyaaaaaabc'); /**
 
 var t = new _test2.default('ddddd');
 
-},{"./modules/test":2}],2:[function(require,module,exports){
+},{"./modules/test":3}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -32,4 +45,4 @@ var Test = function Test(text) {
 
 exports.default = Test;
 
-},{}]},{},[1]);
+},{}]},{},[1,2]);
