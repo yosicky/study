@@ -1,57 +1,139 @@
 import gulp from 'gulp'
 
 import fs from 'fs'
+import path from 'path'
 import browserify from 'browserify'
 import watchify from 'watchify'
 import babelify from 'babelify'
-import gutil from 'gulp-util'
-import notify from 'gulp-notify'
+import notifier from 'node-notifier'
 import glob from 'glob'
-//import {glob} from 'multi-glob'
+import gulpLoadPlugins from 'gulp-load-plugins'
+import browserSync from 'browser-sync'
 
-const PATHS = {
-  srcFiles: glob.sync('./src/js/*.js'),
-//  srcFiles: glob(['./src/js/*.js', './src/js/modules/*.js'], ),
-  build: './src/html/dist/', 
-  buildFile: 'bundle.js'
-}
+const $ = gulpLoadPlugins();
+const bs = browserSync.create();
+const reload = bs.reload;
 
-function compile(watch) {
-//let f = glob(['./src/js/*.js', './src/js/modules/*.js'], {sync: true}, (err, files) => {console.log(files);return;});
-//console.log(f);
+/**
+ * JavaScript browserify
+ * @param {boolean} watch JSファイル監視モードか
+ */
+const compile = (watch) => {
 
-  let b = browserify({
-//    entries: ['./src/js/index.js'],
-    entries: PATHS.srcFiles,
-    cache: {},
-    packageCache: {},
-    plugin: [watchify]
+  // ファイル情報
+  const PATHS = {
+    srcFolder: './src/js/',
+    srcFiles: glob.sync('./src/js/*.js'),
+    buildFolder: './dist/js/',
+  };
+
+  // ソースファイルの配列からからバンドル後のファイル名の配列を作成
+  const buildFiles = PATHS.srcFiles.map((file) => {
+    return file.replace(PATHS.srcFolder, '');
   });
 
-  function bundle() {
+  // browserifyでJSをバンドル
+  const bundle = (b, buildName) => {
     b
       .transform('babelify')
-      .bundle()
-      .pipe(fs.createWriteStream(PATHS.build + PATHS.buildFile));
-
+      .transform({global: true}, 'uglifyify')
+      .bundle(() => {
+        notifier.notify(
+          {
+            title: 'Gulp',
+            message: buildName + 'bundle',
+            icon: path.join(__dirname, 'gulp-2x.png')
+          }
+        );
+        $.util.log(buildName + ' bundle');
+      })
+      .on('error', $.notify.onError({
+            title: 'Compile Error',
+            message: '<%= error.message %>'
+       }))
+      .pipe(fs.createWriteStream(PATHS.buildFolder + buildName));
   }
 
-  if (watch) {
-    b.on('update', () => {
-      console.log('-> bundling...');
-      bundle();
+  // watchタスクの場合browserifyのプラグインにwatchfyを指定
+  let plugin = (watch) ? [watchify] : [];
+
+  // エントリーポイントとなる各JSファイルに対してバンドル
+  PATHS.srcFiles.forEach((srcFile, index) => {
+    let b = browserify({
+      entries: PATHS.srcFiles[index],
+      cache: {},
+      packageCache: {},
+      plugin: plugin
     });
-  }
 
-  bundle();
+    // JSファイル監視モードの場合ファイルアップデート時にバンドル
+    if (watch) {
+      b.on('update', () => {
+        bundle(b, buildFiles[index]);
+        $.util.log(srcFile + ' bundling...');
+      });
+    }
 
+    // バンドル実行
+    bundle(b, buildFiles[index]);
+  });
+
+  if (watch) $.util.log('watching js...');
 }
 
-function watch() {
+const jsWatch = () => {
   return compile(true);
 };
 
-gulp.task('build', function() { return compile(); });
-gulp.task('watch', function() { return watch(); });
+/**
+ * srcのHTMLファイルをdistにコピーする
+ */
+const html = () => {
+
+  // ファイル情報
+  const PATHS = {
+    srcFolder: './src/html/',
+    buildFolder: './dist/',
+  };
+
+  gulp.src(PATHS.srcFolder + '*.html')
+    .pipe(gulp.dest(PATHS.buildFolder))
+    .pipe($.size({
+      showFiles: true,
+      title: 'copy'
+    }));
+}
+
+const html_watch = () => {
+  html();
+  gulp.watch('./src/html/*.html', () => { return html(); });
+}
+
+/**
+ * browser-sync　サーバー起動
+ */
+const serve = () => {
+
+  bs.init({
+    server: {
+      baseDir: './dist/',
+      index: 'index.html'
+    }
+  });
+
+  gulp.watch('dist/**/*').on('change', reload);
+}
+
+// JS tasks
+gulp.task('js_build', () => { return compile(); });
+gulp.task('js_watch', () => { return jsWatch(); });
+
+// HTML tasks
+gulp.task('html_copy', () => { return html(); });
+gulp.task('html_watch', () => { return html_watch(); });
+
+
+gulp.task('watch', ['html_watch', 'js_watch'], () => { return serve(); });
+gulp.task('build', ['html_copy', 'js_build']);
 
 gulp.task('default', ['watch']);

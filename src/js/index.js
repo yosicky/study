@@ -11,7 +11,8 @@ var myArray = [1, 2, 3, 4, 5];
 var myObj = {
   a: 100,
   b: 200,
-  c: 300
+  c: 300,
+  d: 600
 };
 
 forEach(myObj, (val, key) => {
