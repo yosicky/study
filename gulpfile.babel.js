@@ -7,12 +7,28 @@ import watchify from 'watchify'
 import babelify from 'babelify'
 import notifier from 'node-notifier'
 import glob from 'glob'
+import mkdirp from 'mkdirp'
 import gulpLoadPlugins from 'gulp-load-plugins'
 import browserSync from 'browser-sync'
 
 const $ = gulpLoadPlugins();
 const bs = browserSync.create();
 const reload = bs.reload;
+const getDirName = path.dirname;
+
+/**
+ * ファイルを書き込むとき指定のディレクトリがなければ作成してファイルを書き込む
+ * @param  {string}            path     書き込むファイルパス
+ * @param  {string | buffer}   contents 書き込むコンテンツ
+ * @param  {Function}          cb       コールバック
+ * @return {}
+ */
+//function writeFile (path, contents, cb) {
+//  mkdirp(getDirName(path), function (err) {
+//    if (err) return cb(err)
+//    fs.writeFile(path, contents, cb)
+//  })
+//}
 
 /**
  * JavaScript browserify
@@ -60,7 +76,7 @@ const compile = (watch) => {
   // エントリーポイントとなる各JSファイルに対してバンドル
   PATHS.srcFiles.forEach((srcFile, index) => {
     let b = browserify({
-      entries: PATHS.srcFiles[index],
+      entries: srcFile,
       cache: {},
       packageCache: {},
       plugin: plugin
@@ -75,12 +91,18 @@ const compile = (watch) => {
     }
 
     // バンドル実行
-    bundle(b, buildFiles[index]);
+    // 書き出し先ディレクトリが無い場合作成する
+    mkdirp(PATHS.buildFolder, (err) => {
+        if (err) console.error(err)
+        else bundle(b, buildFiles[index])
+    });
   });
-
-  if (watch) $.util.log('watching js...');
 }
 
+/**
+ * JavaScript browserify をウォッチモードで実行
+ * @return {}
+ */
 const jsWatch = () => {
   return compile(true);
 };
@@ -93,7 +115,7 @@ const html = () => {
   // ファイル情報
   const PATHS = {
     srcFolder: './src/html/',
-    buildFolder: './dist/',
+    buildFolder: './dist',
   };
 
   gulp.src(PATHS.srcFolder + '*.html')
@@ -104,6 +126,9 @@ const html = () => {
     }));
 }
 
+/**
+ * srcのHTMLファイルをdistにコピーし、ソースのhtmlに変更があったらそのファイルをコピーする
+ */
 const html_watch = () => {
   html();
   gulp.watch('./src/html/*.html', () => { return html(); });
