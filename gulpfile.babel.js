@@ -10,6 +10,7 @@ import glob from 'glob'
 import mkdirp from 'mkdirp'
 import gulpLoadPlugins from 'gulp-load-plugins'
 import browserSync from 'browser-sync'
+import PATHS from './config'
 
 const $ = gulpLoadPlugins();
 const bs = browserSync.create();
@@ -36,16 +37,12 @@ const getDirName = path.dirname;
  */
 const compile = (watch) => {
 
-  // ファイル情報
-  const PATHS = {
-    srcFolder: './src/js/',
-    srcFiles: glob.sync('./src/js/*.js'),
-    buildFolder: './dist/js/',
-  };
+  // browserify対象のJSファイルの配列
+  const FILES = glob.sync(`${PATHS.srcJS}*.js`);
 
   // ソースファイルの配列からからバンドル後のファイル名の配列を作成
-  const buildFiles = PATHS.srcFiles.map((file) => {
-    return file.replace(PATHS.srcFolder, '');
+  const buildFiles = FILES.map((file) => {
+    return file.replace(PATHS.srcJS, '');
   });
 
   // browserifyでJSをバンドル
@@ -67,14 +64,14 @@ const compile = (watch) => {
             title: 'Compile Error',
             message: '<%= error.message %>'
        }))
-      .pipe(fs.createWriteStream(PATHS.buildFolder + buildName));
+      .pipe(fs.createWriteStream(PATHS.buildJS + buildName));
   }
 
   // watchタスクの場合browserifyのプラグインにwatchfyを指定
   let plugin = (watch) ? [watchify] : [];
 
   // エントリーポイントとなる各JSファイルに対してバンドル
-  PATHS.srcFiles.forEach((srcFile, index) => {
+  FILES.forEach((srcFile, index) => {
     let b = browserify({
       entries: srcFile,
       cache: {},
@@ -92,7 +89,7 @@ const compile = (watch) => {
 
     // バンドル実行
     // 書き出し先ディレクトリが無い場合作成する
-    mkdirp(PATHS.buildFolder, (err) => {
+    mkdirp(PATHS.buildJS, (err) => {
         if (err) console.error(err)
         else bundle(b, buildFiles[index])
     });
@@ -108,18 +105,16 @@ const jsWatch = () => {
 };
 
 /**
- * srcのHTMLファイルをdistにコピーする
+ * HTMLファイルをdistにコピーする
  */
-const html = () => {
+const html = (file) => {
 
-  // ファイル情報
-  const PATHS = {
-    srcFolder: './src/html/',
-    buildFolder: './dist',
-  };
+  // 指定のファイルがある場合はそのファイルを、無い場合はsrc/htmlの全htmlを対象にする
+  const FILE = file ? file : `${PATHS.srcHtml}*.html`;
 
-  gulp.src(PATHS.srcFolder + '*.html')
-    .pipe(gulp.dest(PATHS.buildFolder))
+  // コピー
+  gulp.src(FILE)
+    .pipe(gulp.dest(PATHS.build))
     .pipe($.size({
       showFiles: true,
       title: 'copy'
@@ -130,8 +125,50 @@ const html = () => {
  * srcのHTMLファイルをdistにコピーし、ソースのhtmlに変更があったらそのファイルをコピーする
  */
 const html_watch = () => {
+
+  // 初めに全てのhtmlをdistにコピー
   html();
-  gulp.watch('./src/html/*.html', () => { return html(); });
+
+  // 変更のあったhtmlをdistにコピー
+  gulp.watch(`${PATHS.srcHtml}*.html`, (e) => { return html(e.path); });
+}
+
+/**
+ * sassコンパイル
+ */
+const sass = () => {
+
+  // 指定のファイルがある場合はそのファイルを、無い場合はsrc/sassの全scssを対象にする
+  const FILE = `${PATHS.srcSass}*.scss`;
+
+  // Sassコンパイル
+  gulp.src(FILE)
+    .pipe($.plumber())
+    .pipe($.sass())
+    .on('error', $.notify.onError({
+          title: 'Sass Error',
+          message: '<%= error.message %>'
+     }))
+    .pipe($.cssnext({
+      compress: true
+    }))
+    .pipe(gulp.dest(PATHS.buildCSS))
+    .pipe($.size({
+      showFiles: true,
+      title: 'copy'
+    }));
+}
+
+/**
+ * sassの変更を監視しコンパイル
+ */
+const sass_watch = () => {
+
+  // 初めに全てコンパイル
+  sass();
+
+  // 
+  gulp.watch(`${PATHS.srcSass}**/*.scss`, (e) => { return sass(); });
 }
 
 /**
@@ -139,14 +176,16 @@ const html_watch = () => {
  */
 const serve = () => {
 
+  const WATCH_DIR = PATHS.build.replace(/^\.\//, '');
+
   bs.init({
     server: {
-      baseDir: './dist/',
+      baseDir: PATHS.build,
       index: 'index.html'
     }
   });
 
-  gulp.watch('dist/**/*').on('change', reload);
+  gulp.watch(`${WATCH_DIR}**/*`).on('change', reload);
 }
 
 // JS tasks
@@ -157,8 +196,11 @@ gulp.task('js_watch', () => { return jsWatch(); });
 gulp.task('html_copy', () => { return html(); });
 gulp.task('html_watch', () => { return html_watch(); });
 
+// CSS tasks
+gulp.task('css_build', () => { return sass(); });
+gulp.task('css_watch', () => { return sass_watch(); });
 
-gulp.task('watch', ['html_watch', 'js_watch'], () => { return serve(); });
-gulp.task('build', ['html_copy', 'js_build']);
+gulp.task('watch', ['html_watch', 'js_watch', 'css_watch'], () => { return serve(); });
+gulp.task('build', ['html_copy', 'js_build', 'css_build']);
 
 gulp.task('default', ['watch']);
