@@ -6,13 +6,13 @@ export default class Entry {
     this.$cat = obj.cat;
     this.$fish = obj.fish;
     this.$tiger = obj.tiger;
+    this.$prices = obj.prices;
     this.config = config;
     this.prices = null;
     this.$mediator = mediator;
 
-    this.$mediator.on('entry:request', () => {
-      this._setPrice();
-    });
+    this.$mediator.on('entry:request', this._setPrice.bind(this));
+    this.$mediator.on('entry:setprice', this._dispTable.bind(this));
 
     this._init();
   }
@@ -63,5 +63,11 @@ export default class Entry {
           break;
       }
     }
+    this.$mediator.trigger('entry:setprice');
+  }
+
+  _dispTable() {
+    let len = $('.is-display').length;
+    $('.is-display:last').find('.price').addClass('is-last');
   }
 }

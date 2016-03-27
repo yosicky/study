@@ -39,7 +39,8 @@ $(function () {
     dog: $('#dog'),
     cat: $('#cat'),
     fish: $('#fish'),
-    tiger: $('#tiger')
+    tiger: $('#tiger'),
+    prices: $('.price')
   };
   alert($().jquery);
   let $mediator = $('<mediator/>');
