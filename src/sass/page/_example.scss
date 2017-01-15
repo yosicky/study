@@ -1,0 +1,12 @@
+//@import "./import";
+
+.example {
+  &Test {
+    background-color: #88c;
+  }
+  &__btn {
+    @extend %c-btn;
+    width: 300px;
+    background-color: #66c;
+  }
+}

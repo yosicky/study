@@ -1,0 +1,12 @@
+{
+  "name": "modernizr",
+  "version": "1.0.0",
+  "description": "personal study",
+  "author": "yosicky",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yosicky/study.git"
+  },
+  "homepage": "https://github.com/yosicky/study#readme"
+}

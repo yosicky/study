@@ -1,15 +1,9 @@
-.flex {
-  width: 600px;
-  overflow: hidden;
-  .left {
-    float: left;
-    background-color: #f00;
-  }
-  .right {
-    overflow: hidden;
-    background-color: #00f;
-    .inputs {
-      width: 100%;
-    }
-  }
-}
+@import
+  // base
+  "./base/foundation/normalize",
+
+  "./base/components/c-btn",
+
+  // page
+  "./page/index",
+  "./page/example";

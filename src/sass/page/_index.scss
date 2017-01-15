@@ -1,0 +1,55 @@
+//@import "./import";
+
+.index {
+  .flex {
+    width: 600px;
+    overflow: hidden;
+    .left {
+      float: left;
+      background-color: #f00;
+    }
+    .right {
+      overflow: hidden;
+      background-color: #00f;
+      .inputs {
+        width: 100%;
+      }
+    }
+  }
+  &__btn {
+    @extend %c-btn;
+    width: 200px;
+  }
+  &__modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, .8);
+    &.is-active {
+      display: block;
+    }
+    &Container {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: auto;
+      width: 300px;
+      height: 100px;
+      background-color: #fff;
+      overflow: scroll;
+      &Inner {
+        height: 300px;
+        background-color: #552;
+      }
+    }
+  }
+  &__dummy {
+    height: 2000px;
+    background-color: #448;
+  }
+}

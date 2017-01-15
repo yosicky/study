@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8">
   <title>study</title>
+  <link rel="stylesheet" type="text/css" href="/css/app.css">
   <script src="/js/index.js"></script>
 </head>
 <body>
-  <div id="container">
+  <div id="container" class="index">
     aaa
-    <button type="button" id="fn-btn" data-name="aho">ボタン</button>
+    <a href="/example.html">exampleへ</a>
+    <button type="button" id="fn-btn" class="index__btn" data-name="aho">ボタン</button>
 
     <table>
       <tbody>
@@ -30,6 +32,16 @@
         </tr>
       </tbody>
     </table>
+    <div class="index__dummy">
+      ggg
+    </div>
+    <div class="index__modal" id="fn-modal">
+      <div class="index__modalContainer">
+        <div class="index__modalContainerInner">
+          モーダルですよ
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

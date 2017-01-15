@@ -11,6 +11,7 @@ import mkdirp from 'mkdirp'
 import gulpLoadPlugins from 'gulp-load-plugins'
 import browserSync from 'browser-sync'
 import PATHS from './config'
+import licensify from 'licensify'
 
 const $ = gulpLoadPlugins();
 const bs = browserSync.create();
@@ -47,7 +48,14 @@ const compile = (watch) => {
 
   // browserifyでJSをバンドル
   const bundle = (b, buildName) => {
+    let bnr = '';
+    if (buildName === 'index.js') {
+      bnr = 'hoge';
+    }
+    console.log('foo?', bnr);
+
     b
+      .plugin(licensify)
       .transform('babelify')
       .transform({global: true}, 'uglifyify')
       .bundle(() => {
@@ -150,7 +158,7 @@ const sass = () => {
           message: '<%= error.message %>'
      }))
     .pipe($.cssnext({
-      compress: true
+      compress: false
     }))
     .pipe(gulp.dest(PATHS.buildCSS))
     .pipe($.size({

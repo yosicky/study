@@ -3,9 +3,11 @@
  */
 
 import forEach from 'lodash/forEach' 
-import test from './modules/test'
-import Entry from './modules/base'
-import $ from 'jquery'
+//import test from './modules/test'
+//import Entry from './modules/base'
+//import $ from 'jquery'
+import $ from './modules/jquery-2.2.2.min'
+import modernizr from './modules/modernizr/modernizr-custom'
 
 var STUDY = STUDY || {};
 
@@ -33,8 +35,12 @@ forEach(STUDY.myObj, (val, key) => {
   console.log(val, key);
 });
 
+class EntryDefault extends Entry {
+
+}
 
 $(function () {
+  const $modal = $('#fn-modal');
   let elements = {
     dog: $('#dog'),
     cat: $('#cat'),
@@ -42,12 +48,29 @@ $(function () {
     tiger: $('#tiger'),
     prices: $('.price')
   };
-  alert($().jquery);
+//  alert($().jquery);
   let $mediator = $('<mediator/>');
-  $('#fn-btn').on('click', (e) => { STUDY.t.btnClick(e.target, $mediator); });
-  $mediator.on('hage', () => { console.log('hage'); });
+  $('#fn-btn').on('click', (e) => { 
+    STUDY.t.btnClick(e.target, $mediator);
+    $modal.addClass('is-active');
+    $modal.on('click', (e) => {
+      console.log(e.target, e.currentTarget);
+      if (e.target === e.currentTarget) {
+        $(e.target).removeClass('is-active');
+      }
+    });
+    $modal.css({height: $(window).height() + 'px'});
+//    let scroll_event = 'onwheel' in document ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
+//    $('body').on(scroll_event, function (e) {
+//      e.preventDefault();
+//    });
+//    $('body').on('touchmove.noScroll', function (e) {
+//      e.preventDefault();
+//    });
+  });
+  $mediator.on('hagee', () => { console.log('hage'); });
 
-  let e = new Entry(elements, STUDY.config, $mediator);
+  let e = new EntryDefault(elements, STUDY.config, $mediator);
 
 });
 
