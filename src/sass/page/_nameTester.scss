@@ -1,0 +1,17 @@
+//@import "./import";
+
+.nameTester {
+  &__output {
+    &List {
+      width: 35em;
+      &Item {
+        display: inline-block;
+        width: 7em;
+        &--first {
+          display: inline-block;
+          width: 100%;
+        }
+      }
+    }
+  }
+}
